@@ -43,7 +43,7 @@ const SignUp = () => {
               isSignUpScreen ? "text-blue-600" : "text-gray-500"
             }`}
           >
-            <Text>Sign</Text>
+            <Text>Sign </Text>
             <Text className="underline decoration-2 underline-offset-[10px]">
               Up
             </Text>

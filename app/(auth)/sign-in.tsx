@@ -5,12 +5,24 @@ import { icons } from "@/constants";
 import CustomButton from "@/components/CustomButton";
 import { useRouter, useSegments } from "expo-router";
 
-const SignUp = () => {
+const SignIn = () => {
   const router = useRouter();
   const segments = useSegments() as string[];
 
-  const handleSignUp = () => {
-    console.log("Sign Up Button Pressed");
+  const handleSignIn = () => {
+    console.log("Sign In Button Pressed");
+  };
+
+  const handleForgetPassword = () => {
+    console.log("Forget Password Pressed");
+  };
+
+  const handleGoogleSignIn = () => {
+    console.log("Google Sign In Pressed");
+  };
+
+  const handleFacebookSignIn = () => {
+    console.log("Facebook Sign In Pressed");
   };
 
   const isSignInScreen = segments.some((segment) => segment === "sign-in");
@@ -43,7 +55,7 @@ const SignUp = () => {
               isSignInScreen ? "text-gray-500" : "text-blue-600"
             }`}
           >
-            <Text>Sign</Text>
+            <Text>Sign </Text>
             <Text className="underline decoration-2 underline-offset-[10px]">
               Up
             </Text>
@@ -64,10 +76,37 @@ const SignUp = () => {
           placeholder="Password"
           showLabel={false}
         />
-        <CustomButton title="Sign In" onPress={handleSignUp} className="mt-4" />
+        <CustomButton title="Sign In" onPress={handleSignIn} className="mt-4" />
+
+        <TouchableOpacity onPress={handleForgetPassword} className="mt-5">
+          <Text className="text-black text-center">Forget Password?</Text>
+        </TouchableOpacity>
+
+        <Text className="text-center mt-2">Or</Text>
+
+        <View className="flex flex-row items-center mt-2">
+          <View className="flex-1 border-t border-gray-300" />
+          <Text className="mx-2 text-gray-500">Sign Up with</Text>
+          <View className="flex-1 border-t border-gray-300" />
+        </View>
+
+        <View className="flex flex-row justify-between mt-4">
+          <CustomButton
+            title="Google"
+            onPress={handleGoogleSignIn}
+            className="flex-1 mr-2"
+          />
+          <TouchableOpacity
+            onPress={handleFacebookSignIn}
+            className="flex-1 ml-2 border border-blue-600 rounded-full py-2 justify-center items-center"
+            style={{ backgroundColor: "transparent" }}
+          >
+            <Text className="text-black text-center font-bold">Facebook</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
 };
 
-export default SignUp;
+export default SignIn;
