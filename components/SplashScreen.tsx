@@ -1,4 +1,3 @@
-// components/SplashScreen.tsx
 import React, { useEffect } from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 import Animated, {
@@ -12,9 +11,9 @@ import { LinearGradient } from "expo-linear-gradient";
 
 const SplashScreen: React.FC = () => {
   const logoOpacity = useSharedValue(0);
-  const logoPositionX = useSharedValue(-150); // Start from off-screen left
-  const logoPositionY = useSharedValue(0); // Start from the center (will adjust during animation)
-  const textOpacity = useSharedValue(0); // Start with text invisible
+  const logoPositionX = useSharedValue(-150);
+  const logoPositionY = useSharedValue(0);
+  const textOpacity = useSharedValue(0);
   const gradientOpacity = useSharedValue(0);
 
   useEffect(() => {
@@ -40,7 +39,7 @@ const SplashScreen: React.FC = () => {
         damping: 2,
         stiffness: 100,
       });
-    }, 1200); // Delay of 1200ms to allow logo animation to complete
+    }, 1200);
 
     // Cleanup timeout on unmount
     return () => clearTimeout(timeout);
