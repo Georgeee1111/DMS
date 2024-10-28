@@ -39,7 +39,7 @@ const SplashScreen: React.FC = () => {
         damping: 2,
         stiffness: 100,
       });
-    }, 1200); // Delay of 1200ms to allow logo animation to complete
+    }, 1200);
 
     // Cleanup timeout on unmount
     return () => clearTimeout(timeout);
