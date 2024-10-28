@@ -12,9 +12,9 @@ import { LinearGradient } from "expo-linear-gradient";
 
 const SplashScreen: React.FC = () => {
   const logoOpacity = useSharedValue(0);
-  const logoPositionX = useSharedValue(-150); // Start from off-screen left
-  const logoPositionY = useSharedValue(0); // Start from the center (will adjust during animation)
-  const textOpacity = useSharedValue(0); // Start with text invisible
+  const logoPositionX = useSharedValue(-150); 
+  const logoPositionY = useSharedValue(0); 
+  const textOpacity = useSharedValue(0); 
   const gradientOpacity = useSharedValue(0);
 
   useEffect(() => {
