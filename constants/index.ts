@@ -33,6 +33,7 @@ import onboarding3 from "@/assets/images/onboarding3.png";
 import signUpCar from "@/assets/images/signup-car.png";
 import welcomeImage from "@/assets/images/welcomeImage.jpg"
 import thirdSlide from "@/assets/images/third-slide.jpg"
+import plus from "@/assets/icons/plus.png"
 
 export const images = {
   onboarding1,
@@ -73,6 +74,7 @@ export const icons = {
   star,
   target,
   to,
+  plus,
 };
 
 export const onboarding = [

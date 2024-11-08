@@ -15,7 +15,7 @@ const InputField = ({
   label,
   icon,
   secureTextEntry = false,
-  showLabel = true, // Default to true
+  showLabel = true,
   labelStyle,
   containerStyle,
   inputStyle,

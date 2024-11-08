@@ -1,84 +1,132 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, ImageBackground } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InputField from "@/components/InputField";
 import { icons } from "@/constants";
 import CustomButton from "@/components/CustomButton";
 import { useRouter, useSegments } from "expo-router";
+import axios, { AxiosError } from "axios";
+import { useState } from "react";
 
 const SignUp = () => {
   const router = useRouter();
   const segments = useSegments() as string[];
+  const [formData, setFormData] = useState({
+    name: "",
+    phone_number: "",
+    email: "",
+    password: "",
+  });
 
-  const handleSignUp = () => {
-    console.log("Sign Up Button Pressed");
+  const handleSignUp = async () => {
+    try {
+      const response = await axios.post(
+        "http://192.168.1.8:8000/api/register",
+        formData
+      );
+      console.log("User registered successfully:", response.data);
+      router.replace("/(auth)/sign-in");
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        console.error("Registration error:", error.response.data);
+        console.error("Status code:", error.response.status);
+      } else {
+        console.error("An unknown error occurred:", error);
+      }
+      console.error("Registration error:", error);
+    }
   };
 
   const isSignUpScreen = segments.some((segment) => segment === "sign-up");
 
   return (
-    <SafeAreaView className="flex-1 justify-center items-center bg-gray-100">
-      <View className="flex flex-row justify-between mb-4 w-full">
-        <TouchableOpacity
-          onPress={() => router.replace("/(auth)/sign-in")}
-          className="ml-[2rem]"
-        >
-          <Text
-            className={`flex flex-row text-[3rem] font-bold ${
-              isSignUpScreen ? "text-gray-500" : "text-blue-600"
-            }`}
+    <ImageBackground
+      source={require("@/assets/images/Background.jpg")}
+      style={{ flex: 1 }}
+      resizeMode="cover"
+    >
+      <SafeAreaView className="flex-1 justify-center items-center bg-opacity-50">
+        <View className="flex flex-row justify-between mb-4 w-full">
+          <TouchableOpacity
+            onPress={() => router.replace("/(auth)/sign-in")}
+            className="ml-[2rem]"
           >
-            <Text className="underline decoration-2 underline-offset-[10px]">
-              Lo
+            <Text
+              className={`flex flex-row text-[3rem] font-bold ${
+                isSignUpScreen ? "text-gray-500" : "text-blue-600"
+              }`}
+            >
+              <Text className="underline decoration-2 underline-offset-[10px]">
+                Lo
+              </Text>
+              gin
             </Text>
-            gin
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => router.replace("/(auth)/sign-up")}
-          className="mr-[2rem]"
-          disabled={isSignUpScreen}
-        >
-          <Text
-            className={`flex flex-row text-[3rem] font-bold ${
-              isSignUpScreen ? "text-blue-600" : "text-gray-500"
-            }`}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.replace("/(auth)/sign-up")}
+            className="mr-[2rem]"
+            disabled={isSignUpScreen}
           >
-            <Text>Sign </Text>
-            <Text className="underline decoration-2 underline-offset-[10px]">
-              Up
+            <Text
+              className={`flex flex-row text-[3rem] font-bold ${
+                isSignUpScreen ? "text-blue-600" : "text-gray-500"
+              }`}
+            >
+              <Text>Sign </Text>
+              <Text className="underline decoration-2 underline-offset-[10px]">
+                Up
+              </Text>
             </Text>
-          </Text>
-        </TouchableOpacity>
-      </View>
-      <View className="bg-white bg-opacity-70 p-6 rounded-lg shadow-lg w-11/12 max-w-md">
-        <InputField
-          label="Name"
-          icon={icons.person}
-          placeholder="Name"
-          showLabel={false}
-        />
-        <InputField
-          label="Phone Number"
-          icon={icons.person}
-          placeholder="Phone Number"
-          showLabel={false}
-        />
-        <InputField
-          label="Email"
-          icon={icons.email}
-          placeholder="Email"
-          showLabel={false}
-        />
-        <InputField
-          label="Password"
-          secureTextEntry={true}
-          icon={icons.lock}
-          placeholder="Password"
-          showLabel={false}
-        />
-        <CustomButton title="Sign Up" onPress={handleSignUp} className="mt-4" />
-      </View>
-    </SafeAreaView>
+          </TouchableOpacity>
+        </View>
+        <View
+          style={{ backgroundColor: "rgba(73, 88, 103, 0.5)" }}
+          className="p-6 rounded-lg w-11/12 max-w-md"
+        >
+          <InputField
+            label="Name"
+            icon={icons.person}
+            placeholder="Name"
+            showLabel={false}
+            placeholderTextColor="white"
+            onChangeText={(text) => setFormData({ ...formData, name: text })}
+          />
+          <InputField
+            label="Phone Number"
+            icon={icons.person}
+            placeholder="Phone Number"
+            showLabel={false}
+            placeholderTextColor="white"
+            onChangeText={(text) =>
+              setFormData({ ...formData, phone_number: text })
+            }
+          />
+          <InputField
+            label="Email"
+            icon={icons.email}
+            placeholder="Email"
+            showLabel={false}
+            placeholderTextColor="white"
+            onChangeText={(text) => setFormData({ ...formData, email: text })}
+          />
+          <InputField
+            label="Password"
+            secureTextEntry={true}
+            icon={icons.lock}
+            placeholder="Password"
+            showLabel={false}
+            placeholderTextColor="white"
+            onChangeText={(text) =>
+              setFormData({ ...formData, password: text })
+            }
+          />
+          <CustomButton
+            title="Sign Up"
+            onPress={handleSignUp}
+            style={{ backgroundColor: "rgba(0, 0, 0, 0.50)", marginTop: 16 }}
+          />
+        </View>
+      </SafeAreaView>
+    </ImageBackground>
   );
 };
 

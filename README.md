@@ -2,6 +2,10 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
+## to get started for the backend
+
+php artisan serve --host=0.0.0.0 --port=8000
+
 ## Get started
 
 1. Install dependencies
