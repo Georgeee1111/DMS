@@ -17,7 +17,7 @@ class CreateRoomsTable extends Migration
             $table->id();  
             $table->string('room_number')->unique();
             $table->enum('status', ['occupied', 'vacant', 'maintenance'])->default('vacant');  
-            $table->integer('capacity')->default(1);          
+            $table->enum('room_type', ['single', 'double', 'suite'])->default('single'); 
             $table->decimal('price', 8, 2)->nullable();      
             $table->string('floor')->nullable();             
             $table->text('description')->nullable();        

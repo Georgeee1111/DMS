@@ -15,7 +15,7 @@ const InputField = ({
   label,
   icon,
   secureTextEntry = false,
-  showLabel = true,
+  showLabel = true, // Default value for showLabel is true
   labelStyle,
   containerStyle,
   inputStyle,
@@ -29,7 +29,8 @@ const InputField = ({
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View className="my-2 w-full">
-          {showLabel && (
+          {/* Render the label only if showLabel is true */}
+          {showLabel && label && (
             <Text className={`text-lg font-JakartaSemiBold mb-3 ${labelStyle}`}>
               {label}
             </Text>

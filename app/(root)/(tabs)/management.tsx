@@ -1,21 +1,29 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   FlatList,
   Modal,
-  Alert,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ListRenderItem,
+  ListRenderItemInfo,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InputField from "@/components/InputField";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Icon from "react-native-vector-icons/Ionicons";
+import { useMultiSelect } from "@/components/MultiSelectContext";
 
 interface Room {
   id: string;
   room_number: string;
-  capacity: string;
+  room_type: string;
   price: string;
   floor: string;
   description: string;
@@ -27,20 +35,21 @@ const RoomManagement = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [editRoomId, setEditRoomId] = useState<string | null>(null);
   const [roomNumber, setRoomNumber] = useState("");
-  const [capacity, setCapacity] = useState("");
+  const [roomType, setRoomType] = useState("");
   const [price, setPrice] = useState("");
   const [floor, setFloor] = useState("");
   const [description, setDescription] = useState("");
   const [token, setToken] = useState<string | null>(null);
+  const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
+  const { isMultiSelectMode, setIsMultiSelectMode } = useMultiSelect();
+  const [roomDetails, setRoomDetails] = useState<Room | null>(null);
+  const [isRoomDetailsModalVisible, setRoomDetailsModalVisible] =
+    useState(false);
 
   useEffect(() => {
     const fetchToken = async () => {
       const storedToken = await AsyncStorage.getItem("token");
-      if (storedToken) {
-        setToken(storedToken);
-      } else {
-        console.error("Token not found");
-      }
+      setToken(storedToken);
     };
     fetchToken();
   }, []);
@@ -69,7 +78,7 @@ const RoomManagement = () => {
 
     const roomData = {
       room_number: roomNumber,
-      capacity,
+      room_type: roomType,
       price,
       floor,
       description,
@@ -78,7 +87,6 @@ const RoomManagement = () => {
 
     try {
       if (editRoomId) {
-        // Update existing room
         const response = await axios.put(
           `http://192.168.1.8:8000/api/rooms/${editRoomId}`,
           roomData,
@@ -90,7 +98,6 @@ const RoomManagement = () => {
           )
         );
       } else {
-        // Add new room
         const response = await axios.post(
           "http://192.168.1.8:8000/api/add-room",
           roomData,
@@ -105,25 +112,29 @@ const RoomManagement = () => {
     }
   };
 
-  const deleteRoom = async (roomId: string) => {
+  const deleteSelectedRooms = async () => {
     try {
-      const response = await axios.delete(
-        `http://192.168.1.8:8000/api/rooms/${roomId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      await Promise.all(
+        selectedRooms.map((roomId) =>
+          axios.delete(`http://192.168.1.8:8000/api/rooms/${roomId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        )
       );
-      console.log("Room deleted successfully", response.data);
-      setRooms((prevRooms) => prevRooms.filter((room) => room.id !== roomId));
+      setRooms((prevRooms) =>
+        prevRooms.filter((room) => !selectedRooms.includes(room.id))
+      );
+      setSelectedRooms([]);
+      setIsMultiSelectMode(false);
     } catch (error) {
-      console.error("Error deleting room:", error);
+      console.error("Error deleting rooms:", error);
     }
   };
 
   const resetForm = () => {
     setEditRoomId(null);
     setRoomNumber("");
-    setCapacity("");
+    setRoomType("");
     setPrice("");
     setFloor("");
     setDescription("");
@@ -133,114 +144,302 @@ const RoomManagement = () => {
   const openEditModal = (room: Room) => {
     setEditRoomId(room.id);
     setRoomNumber(room.room_number);
-    setCapacity(room.capacity);
+    setRoomType(room.room_type);
     setPrice(room.price);
     setFloor(room.floor);
     setDescription(room.description);
     setModalVisible(true);
   };
 
-  const renderRoom = ({ item }: { item: Room }) => (
-    <View className="w-1/2 p-2">
-      <View className="border border-gray-300 p-4 rounded-lg">
-        <Text className="font-bold text-lg">{item.room_number}</Text>
-        <Text>Capacity: {item.capacity}</Text>
-        <Text>Price: {item.price}</Text>
-        <Text>Floor: {item.floor}</Text>
-        <Text>Description: {item.description}</Text>
-        <Text>Status: {item.status}</Text>
-        <TouchableOpacity
-          onPress={() => openEditModal(item)}
-          className="mt-2 bg-yellow-500 p-2 rounded-lg"
-        >
-          <Text className="text-white text-center">Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => deleteRoom(item.id)}
-          className="mt-2 bg-red-500 p-2 rounded-lg"
-        >
-          <Text className="text-white text-center">Delete</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+  const handleLongPress = (roomId: string) => {
+    setIsMultiSelectMode(true);
+    setSelectedRooms([roomId]);
+  };
+
+  const handleSelectRoom = (roomId: string) => {
+    setSelectedRooms((prevSelected) =>
+      prevSelected.includes(roomId)
+        ? prevSelected.filter((id) => id !== roomId)
+        : [...prevSelected, roomId]
+    );
+  };
+
+  const handleRoomDetails = (room: Room) => {
+    setRoomDetails(room);
+    setRoomDetailsModalVisible(true);
+  };
+
+  const renderRoom: ListRenderItem<Room> = (
+    props: ListRenderItemInfo<Room>
+  ) => {
+    const { item } = props;
+    return (
+      <TouchableOpacity
+        onLongPress={() => handleLongPress(item.id)}
+        onPress={() =>
+          isMultiSelectMode
+            ? handleSelectRoom(item.id)
+            : handleRoomDetails(item)
+        }
+        className={`w-1/2 p-2 ${isMultiSelectMode && "opacity-50"}`}
+      >
+        <View className="border border-gray-300 p-4 rounded-lg relative">
+          {isMultiSelectMode && (
+            <View className="absolute top-2 right-2">
+              <Icon
+                name={
+                  selectedRooms.includes(item.id)
+                    ? "checkbox-outline"
+                    : "square-outline"
+                }
+                size={24}
+                color="blue"
+              />
+            </View>
+          )}
+
+          <Text className="font-bold text-lg absolute top-2 left-2">
+            {item.room_number}
+          </Text>
+
+          <View className="border-b border-gray-300 mt-8 mb-2" />
+
+          <Text
+            className={`font-semibold text-left text-[1.4rem] ${getStatusColor(
+              item.status
+            )}`}
+          >
+            {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+          </Text>
+
+          <Text className="text-left mt-2 text-[1rem]">
+            {item.room_type
+              .split(" ")
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" ")}
+          </Text>
+
+          <TouchableOpacity
+            onPress={() => openEditModal(item)}
+            className="mt-4 items-end"
+          >
+            <Icon name="create-outline" size={24} color="orange" />
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "occupied":
+        return "text-red-500";
+      case "maintenance":
+        return "text-yellow-500";
+      default:
+        return "text-green-500";
+    }
+  };
+
+  const memoizedRooms = useMemo(() => rooms, [rooms]);
 
   return (
     <SafeAreaView className="flex-1 p-4">
       <Text className="text-2xl font-bold mb-4">Room Management</Text>
 
+      {isMultiSelectMode && (
+        <View
+          className="absolute bottom-0 left-0 right-0 flex-row justify-center items-center px-4 py-4 z-10"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+        >
+          <TouchableOpacity
+            onPress={() => {
+              setIsMultiSelectMode(false);
+              setSelectedRooms([]);
+            }}
+            className="bg-gray-500 p-4 rounded-full mr-10"
+          >
+            <Icon name="close-outline" size={30} color="white" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={deleteSelectedRooms}
+            className="bg-red-500 p-4 rounded-full"
+          >
+            <Icon name="trash-outline" size={30} color="white" />
+          </TouchableOpacity>
+        </View>
+      )}
+
       <FlatList
-        data={rooms}
+        data={memoizedRooms}
         renderItem={renderRoom}
         keyExtractor={(item) => item.id}
         numColumns={2}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{
+          paddingBottom: 200,
+        }}
       />
 
       <TouchableOpacity
         onPress={() => setModalVisible(true)}
         className="absolute bottom-28 right-8 bg-blue-500 p-4 rounded-full"
       >
-        <Text className="text-white font-bold text-lg">+</Text>
+        <Text className="text-white font-bold">+</Text>
       </TouchableOpacity>
 
       <Modal
-        animationType="slide"
-        transparent={true}
         visible={isModalVisible}
-        onRequestClose={() => setModalVisible(false)}
+        onRequestClose={resetForm}
+        transparent={true}
+        animationType="slide"
       >
-        <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-          <View className="bg-white p-6 rounded-lg w-11/12">
-            <Text className="text-xl font-bold mb-4">
-              {editRoomId ? "Edit Room" : "Add New Room"}
-            </Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={{ flex: 1 }}>
+              <ScrollView
+                contentContainerStyle={{
+                  padding: 10,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexGrow: 1,
+                }}
+                keyboardShouldPersistTaps="handled"
+              >
+                <View
+                  style={{
+                    backgroundColor: "white",
+                    width: "100%",
+                    maxWidth: 400,
+                    padding: 16,
+                    borderRadius: 10,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 24,
+                      fontWeight: "bold",
+                      marginBottom: 16,
+                    }}
+                  >
+                    {editRoomId ? "Edit Room" : "Add Room"}
+                  </Text>
 
-            <InputField
-              label="Room Number"
-              value={roomNumber}
-              onChangeText={setRoomNumber}
-              placeholder="Enter room number"
-            />
+                  {/* Input Fields */}
+                  <InputField
+                    label="Room Number"
+                    showLabel={false}
+                    value={roomNumber}
+                    placeholder="Room Number"
+                    onChangeText={setRoomNumber}
+                  />
+                  <InputField
+                    label="Room Type"
+                    showLabel={false}
+                    value={roomType}
+                    placeholder="Room Type (Single, Double, Suite)"
+                    onChangeText={setRoomType}
+                  />
+                  <InputField
+                    label="Price"
+                    showLabel={false}
+                    value={price}
+                    placeholder="Price"
+                    onChangeText={setPrice}
+                  />
+                  <InputField
+                    label="Floor"
+                    showLabel={false}
+                    value={floor}
+                    placeholder="Floor"
+                    onChangeText={setFloor}
+                  />
+                  <InputField
+                    label="Description"
+                    showLabel={false}
+                    value={description}
+                    placeholder="Description"
+                    onChangeText={setDescription}
+                  />
 
-            <InputField
-              label="Capacity"
-              value={capacity}
-              onChangeText={setCapacity}
-              placeholder="Enter capacity"
-            />
+                  {/* Save Button */}
+                  <TouchableOpacity
+                    onPress={handleSaveRoom}
+                    style={{
+                      backgroundColor: "#3b82f6",
+                      padding: 16,
+                      borderRadius: 50,
+                      marginTop: 16,
+                    }}
+                  >
+                    <Text style={{ color: "white", fontWeight: "bold" }}>
+                      {editRoomId ? "Save Changes" : "Save Room"}
+                    </Text>
+                  </TouchableOpacity>
 
-            <InputField
-              label="Price"
-              value={price}
-              onChangeText={setPrice}
-              placeholder="Enter price"
-            />
+                  {/* Cancel Button */}
+                  <TouchableOpacity
+                    onPress={resetForm}
+                    style={{
+                      backgroundColor: "#6b7280",
+                      padding: 16,
+                      borderRadius: 50,
+                      marginTop: 8,
+                    }}
+                  >
+                    <Text style={{ color: "white", fontWeight: "bold" }}>
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      </Modal>
 
-            <InputField
-              label="Floor"
-              value={floor}
-              onChangeText={setFloor}
-              placeholder="Enter floor"
-            />
-
-            <InputField
-              label="Description"
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Enter description"
-            />
-
-            <TouchableOpacity
-              onPress={handleSaveRoom}
-              className="bg-blue-500 p-3 mt-4 rounded-lg"
-            >
-              <Text className="text-white text-center font-bold">
-                {editRoomId ? "Update Room" : "Add Room"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+      <Modal
+        visible={isRoomDetailsModalVisible}
+        onRequestClose={() => setRoomDetailsModalVisible(false)}
+        transparent={true}
+        animationType="slide"
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          <ScrollView
+            contentContainerStyle={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              padding: 20,
+            }}
+          >
+            <View className="bg-white w-full max-w-md p-4 rounded-lg">
+              <Text className="text-2xl font-bold mb-4">Room Details</Text>
+              {roomDetails && (
+                <>
+                  <Text>Room Number: {roomDetails.room_number}</Text>
+                  <Text>Room Type: {roomDetails.room_type}</Text>
+                  <Text>Price: {roomDetails.price}</Text>
+                  <Text>Floor: {roomDetails.floor}</Text>
+                  <Text>Description: {roomDetails.description}</Text>
+                  <Text>Status: {roomDetails.status}</Text>
+                </>
+              )}
+              <TouchableOpacity
+                onPress={() => setRoomDetailsModalVisible(false)}
+                className="bg-gray-500 p-4 rounded-full mt-4"
+              >
+                <Text className="text-white font-bold">Close</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );

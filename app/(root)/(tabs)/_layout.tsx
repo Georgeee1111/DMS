@@ -7,6 +7,7 @@ import {
 } from "react-native";
 
 import { icons } from "@/constants";
+import { useMultiSelect } from "@/components/MultiSelectContext";
 
 const TabIcon = ({
   source,
@@ -36,14 +37,11 @@ const TabIcon = ({
 );
 
 export default function Layout() {
-  const handleClick = () => {
-    console.log("Icon clicked");
-  };
+  const { isMultiSelectMode } = useMultiSelect();
 
   return (
     <View style={{ flex: 1 }}>
       <TouchableOpacity
-        onPress={handleClick}
         style={{
           position: "absolute",
           bottom: 80,
@@ -51,18 +49,7 @@ export default function Layout() {
           transform: [{ translateX: -25 }],
           zIndex: 2,
         }}
-      >
-        <Image
-          source={icons.plus}
-          style={{
-            width: 50,
-            height: 50,
-            borderRadius: 25,
-            backgroundColor: "#FFEB3B",
-          }}
-          resizeMode="contain"
-        />
-      </TouchableOpacity>
+      ></TouchableOpacity>
 
       <Tabs
         initialRouteName="overview"
@@ -78,7 +65,7 @@ export default function Layout() {
             marginHorizontal: 20,
             marginBottom: 20,
             height: 78,
-            display: "flex",
+            display: isMultiSelectMode ? "none" : "flex",
             justifyContent: "space-between",
             alignItems: "center",
             flexDirection: "row",

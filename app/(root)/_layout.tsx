@@ -1,11 +1,14 @@
 import { Stack } from "expo-router";
 import "react-native-reanimated";
+import { MultiSelectProvider } from "@/components/MultiSelectContext";
 
 const RootLayout = () => {
   return (
-    <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-    </Stack>
+    <MultiSelectProvider>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+    </MultiSelectProvider>
   );
 };
 

@@ -27,7 +27,7 @@ class RoomController extends Controller
         $validatedData = $request->validate([
             'room_number' => 'required|string|unique:rooms',
             'status' => 'required|in:occupied,vacant,maintenance',
-            'capacity' => 'nullable|integer|min:1',
+            'room_type' => 'required|in:single,double,suite', // Updated validation for room_type
             'price' => 'nullable|numeric|min:0',
             'floor' => 'nullable|string',
             'description' => 'nullable|string',
@@ -42,7 +42,6 @@ class RoomController extends Controller
         ], 201);
     }
 
-    // Retrieve room by ID for editing
     public function editRoom($id)
     {
         $room = Room::find($id);
@@ -54,10 +53,8 @@ class RoomController extends Controller
         return response()->json(['room' => $room]);
     }
 
-    // Update room details
     public function updateRoom(Request $request, $id)
     {
-        // Find room by ID
         $room = Room::find($id);
 
         if (!$room) {
@@ -68,7 +65,7 @@ class RoomController extends Controller
         $validatedData = $request->validate([
             'room_number' => 'required|string|unique:rooms,room_number,' . $id,
             'status' => 'required|in:occupied,vacant,maintenance',
-            'capacity' => 'nullable|integer|min:1',
+            'room_type' => 'required|in:single,double,suite', 
             'price' => 'nullable|numeric|min:0',
             'floor' => 'nullable|string',
             'description' => 'nullable|string',
@@ -94,5 +91,11 @@ class RoomController extends Controller
         $room->delete();
 
         return response()->json(['message' => 'Room deleted successfully']);
+    }
+
+    public function getRooms()
+    {
+        $rooms = Room::all();
+        return response()->json(['rooms' => $rooms]);
     }
 }

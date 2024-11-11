@@ -11,6 +11,7 @@ Route::post('login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [AuthController::class, 'user']);
     Route::get('room-statistics', [RoomController::class, 'getRoomStatistics']);
+    Route::get('rooms', [RoomController::class, 'getRooms']);
     Route::get('/rooms/{id}/edit', [RoomController::class, 'editRoom']);
     Route::put('/rooms/{id}', [RoomController::class, 'updateRoom']);
     Route::delete('/rooms/{id}', [RoomController::class, 'deleteRoom']);
