@@ -44,15 +44,15 @@ const RoomAnalytics = () => {
         const occupiedPercentage = (
           (roomStats.occupied / totalRoomsCount) *
           100
-        ).toFixed(0);
+        ).toFixed(1);
         const vacantPercentage = (
           (roomStats.vacant / totalRoomsCount) *
           100
-        ).toFixed(0);
+        ).toFixed(1);
         const maintenancePercentage = (
           (roomStats.maintenance / totalRoomsCount) *
           100
-        ).toFixed(0);
+        ).toFixed(1);
 
         setData([
           {
@@ -131,7 +131,7 @@ const RoomAnalytics = () => {
               backgroundColor: "#e26a00",
               backgroundGradientFrom: "#fb8c00",
               backgroundGradientTo: "#ffa726",
-              decimalPlaces: 0,
+              decimalPlaces: 1,
               color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
               style: {
                 borderRadius: 16,
@@ -147,7 +147,43 @@ const RoomAnalytics = () => {
               justifyContent: "center",
             }}
           />
-          <View>
+
+          <View style={{ position: "absolute", top: 80, left: 75 }}>
+            <Text
+              style={{
+                position: "absolute",
+                color: "rgba(139, 0, 0, 0.9)",
+                top: -15,
+                left: 30,
+              }}
+            >
+              {`${((data[0].population / totalRooms) * 100).toFixed(2)}%`}
+            </Text>
+
+            <Text
+              style={{
+                position: "absolute",
+                color: "rgba(0, 0, 139, 0.9)",
+                top: 50,
+                left: 2,
+              }}
+            >
+              {`${((data[1].population / totalRooms) * 100).toFixed(2)}%`}
+            </Text>
+
+            <Text
+              style={{
+                position: "absolute",
+                color: "rgba(139, 69, 19, 0.9)",
+                top: -10,
+                left: -40,
+              }}
+            >
+              {`${((data[2].population / totalRooms) * 100).toFixed(2)}%`}
+            </Text>
+          </View>
+
+          <View className="mt-4">
             <View className="flex-row items-center">
               <View className="w-5 h-5 bg-pink-400 mr-2" />
               <Text>Occupied</Text>

@@ -1,4 +1,10 @@
-import { View, Text, TouchableOpacity, ImageBackground } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ImageBackground,
+  ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InputField from "@/components/InputField";
 import { icons } from "@/constants";
@@ -16,8 +22,10 @@ const SignUp = () => {
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
 
   const handleSignUp = async () => {
+    setLoading(true);
     try {
       const response = await axios.post(
         "http://192.168.1.8:8000/api/register",
@@ -32,7 +40,8 @@ const SignUp = () => {
       } else {
         console.error("An unknown error occurred:", error);
       }
-      console.error("Registration error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -89,6 +98,7 @@ const SignUp = () => {
             showLabel={false}
             placeholderTextColor="white"
             onChangeText={(text) => setFormData({ ...formData, name: text })}
+            className="text-white"
           />
           <InputField
             label="Phone Number"
@@ -119,11 +129,19 @@ const SignUp = () => {
               setFormData({ ...formData, password: text })
             }
           />
-          <CustomButton
-            title="Sign Up"
-            onPress={handleSignUp}
-            style={{ backgroundColor: "rgba(0, 0, 0, 0.50)", marginTop: 16 }}
-          />
+          {loading ? (
+            <ActivityIndicator
+              size="large"
+              color="#fff"
+              style={{ marginTop: 16 }}
+            />
+          ) : (
+            <CustomButton
+              title="Sign Up"
+              onPress={handleSignUp}
+              style={{ backgroundColor: "rgba(0, 0, 0, 0.50)", marginTop: 16 }}
+            />
+          )}
         </View>
       </SafeAreaView>
     </ImageBackground>

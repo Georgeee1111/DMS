@@ -84,6 +84,16 @@ export default function Layout() {
           }}
         />
         <Tabs.Screen
+          name="management"
+          options={{
+            title: "Management",
+            headerShown: false,
+            tabBarIcon: ({ focused }) => (
+              <TabIcon source={icons.profile} focused={focused} />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="notifications"
           options={{
             title: "Rides",
@@ -107,16 +117,6 @@ export default function Layout() {
           name="tenants"
           options={{
             title: "Profile",
-            headerShown: false,
-            tabBarIcon: ({ focused }) => (
-              <TabIcon source={icons.profile} focused={focused} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="management"
-          options={{
-            title: "Management",
             headerShown: false,
             tabBarIcon: ({ focused }) => (
               <TabIcon source={icons.profile} focused={focused} />
